@@ -27,6 +27,7 @@ const StudentManagement = () => {
   const [drawerMode, setDrawerMode] = useState("create");
   const [selectedStudent, setSelectedStudent] = useState(null);
 
+
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null);
   const [confirmMessage, setConfirmMessage] = useState("");
@@ -43,7 +44,7 @@ const StudentManagement = () => {
     setSelectedStudent(null);
   };
 
-  const handleSaveStudent = (studentData) => {
+  const processStudentSave = (studentData) => {
     if (drawerMode === "create") {
       const newStudent = {
         ...studentData,
@@ -62,6 +63,21 @@ const StudentManagement = () => {
     handleCloseDrawer();
   };
 
+  const handleSaveStudent = (studentData) => {
+    setConfirmTitle(drawerMode === "create" ? "Confirm Add" : "Confirm Edit");
+    setConfirmMessage(
+      drawerMode === "create"
+        ? "Are you sure you want to save this new student?"
+        : "Are you sure you want to update this student's details?"
+    );
+
+    setConfirmAction(() => () => {
+      processStudentSave(studentData);
+      setConfirmOpen(false);
+    });
+
+    setConfirmOpen(true);
+  };
 
   const handleDeleteStudent = (studentId) => {
     setConfirmTitle("Delete Student");
@@ -75,10 +91,9 @@ const StudentManagement = () => {
   };
 
   const formatDate = (dateString) => {
-  if (!dateString) return "-";
-  return new Date(dateString).toLocaleDateString("en-GB");
-};
-
+    if (!dateString) return "-";
+    return new Date(dateString).toLocaleDateString("en-GB");
+  };
 
   if (studentsLoading || fieldsLoading) return <div>Loading...</div>;
 
@@ -103,61 +118,38 @@ const StudentManagement = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                   Name
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Email
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Phone
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Created
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Actions
-                </th>
+                <th className="px-6 py-3">Email</th>
+                <th className="px-6 py-3">Phone</th>
+                <th className="px-6 py-3">Status</th>
+                <th className="px-6 py-3">Created</th>
+                <th className="px-6 py-3">Actions</th>
               </tr>
             </thead>
 
             <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {(students || []).map((student) => (
-                <tr
-                  key={student.id}
-                  className="hover:bg-gray-50 dark:hover:bg-gray-700"
-                >
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                    {student.name}
-                  </td>
+                <tr key={student.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                  <td className="px-6 py-4">{student.name}</td>
+                  <td className="px-6 py-4">{student.email}</td>
+                  <td className="px-6 py-4">{student.phone}</td>
 
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
-                    {student.email}
-                  </td>
-
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
-                    {student.phone}
-                  </td>
-
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                  <td className="px-6 py-4">
                     <span
-                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                      className={`px-2 py-1 rounded-full text-xs font-semibold ${
                         student.status === "active"
-                          ? "bg-green-100 text-green-800"
+                          ? "bg-green-200 text-green-800"
                           : student.status === "inactive"
-                          ? "bg-red-100 text-red-800"
-                          : "bg-yellow-100 text-yellow-800"
+                          ? "bg-red-200 text-red-800"
+                          : "bg-yellow-200 text-yellow-800"
                       }`}
                     >
                       {student.status.charAt(0).toUpperCase() + student.status.slice(1)}
                     </span>
                   </td>
 
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
-                   {formatDate(student.createdAt)}
-                  </td>
+                  <td className="px-6 py-4">{formatDate(student.createdAt)}</td>
 
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                  <td className="px-6 py-4 space-x-3">
                     <button
                       onClick={() => handleOpenDrawer("view", student)}
                       className="text-blue-600 hover:text-blue-900"
@@ -206,34 +198,15 @@ const StudentManagement = () => {
           />
         ) : (
           <div className="text-gray-800 dark:text-gray-200">
-            <p>
-              <strong>Name:</strong> {selectedStudent?.name}
-            </p>
-            <p>
-              <strong>Email:</strong> {selectedStudent?.email}
-            </p>
-            <p>
-              <strong>Phone:</strong> {selectedStudent?.phone}
-            </p>
-            <p>
-              <strong>Status:</strong> {selectedStudent?.status}
-            </p>
-            <p>
-              <strong>Created:</strong>{" "}
-              {selectedStudent &&
-                new Date(selectedStudent.createdAt).toLocaleString()}
-            </p>
-
-            <h4 className="font-bold mt-4">Custom Info:</h4>
-            {(customFields || []).map((field) => (
-              <p key={field.id}>
-                <strong>{field.label}:</strong>{" "}
-                {selectedStudent?.customFields?.[field.key]?.toString() || "-"}
+            {Object.entries(selectedStudent || {}).map(([key, value]) => (
+              <p key={key}>
+                <strong>{key}:</strong> {String(value)}
               </p>
             ))}
           </div>
         )}
       </Drawer>
+
       <ConfirmModal
         open={confirmOpen}
         title={confirmTitle}

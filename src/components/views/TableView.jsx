@@ -2,16 +2,14 @@ import React from 'react';
 
 const TableView = ({ students, customFields }) => {
 
-    // Helper to format dates as dd/mm/yyyy
+
     const formatDate = (dateString) => {
         if (!dateString) return '-';
-        return new Date(dateString).toLocaleDateString('en-GB'); // dd/mm/yyyy
+        return new Date(dateString).toLocaleDateString('en-GB');
     };
 
-    // Helper to capitalize first letter
     const capitalize = (str) => str ? str.charAt(0).toUpperCase() + str.slice(1) : '-';
 
-    // Helper to convert boolean to Yes/No
     const yesNo = (value) => value ? 'Yes' : 'No';
 
     return (

@@ -3,16 +3,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '../common/Card';
 
 const GalleryView = ({ students, customFields }) => {
 
-    // Helper to format dates as dd/mm/yyyy
     const formatDate = (dateString) => {
         if (!dateString) return '-';
-        return new Date(dateString).toLocaleDateString('en-GB'); // dd/mm/yyyy
+        return new Date(dateString).toLocaleDateString('en-GB'); 
     };
 
-    // Helper to capitalize first letter
     const capitalize = (str) => str ? str.charAt(0).toUpperCase() + str.slice(1) : '-';
 
-    // Helper to convert boolean to Yes/No
     const yesNo = (value) => value ? 'Yes' : 'No';
 
     return (
@@ -43,9 +40,8 @@ const GalleryView = ({ students, customFields }) => {
                         {customFields.map((field) => {
                             let value = student.customFields?.[field.key];
 
-                            // Format date fields
                             if (field.type === 'date') value = formatDate(value);
-                            // Convert scholarship checkbox to Yes/No
+                         
                             if (field.type === 'checkbox' && field.key.toLowerCase().includes('scholarship')) value = yesNo(value);
 
                             return (
