@@ -1,6 +1,19 @@
 import React from 'react';
 
 const TableView = ({ students, customFields }) => {
+
+    // Helper to format dates as dd/mm/yyyy
+    const formatDate = (dateString) => {
+        if (!dateString) return '-';
+        return new Date(dateString).toLocaleDateString('en-GB'); // dd/mm/yyyy
+    };
+
+    // Helper to capitalize first letter
+    const capitalize = (str) => str ? str.charAt(0).toUpperCase() + str.slice(1) : '-';
+
+    // Helper to convert boolean to Yes/No
+    const yesNo = (value) => value ? 'Yes' : 'No';
+
     return (
         <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -49,18 +62,26 @@ const TableView = ({ students, customFields }) => {
                                                 : 'bg-yellow-100 text-yellow-800'
                                         }`}
                                 >
-                                    {student.status}
+                                    {capitalize(student.status)}
                                 </span>
                             </td>
 
-                            {customFields.map(field => (
-                                <td
-                                    key={`${student.id}-${field.id}`}
-                                    className="px-6 py-4 whitespace-nowrap text-sm"
-                                >
-                                    {String(student.customFields?.[field.key] ?? 'N/A')}
-                                </td>
-                            ))}
+                            {customFields.map(field => {
+                                let value = student.customFields?.[field.key];
+
+                                // Apply formatting for DOB (date type) and scholarship (checkbox type)
+                                if (field.type === 'date') value = formatDate(value);
+                                if (field.type === 'checkbox' && field.key.toLowerCase().includes('scholarship')) value = yesNo(value);
+
+                                return (
+                                    <td
+                                        key={`${student.id}-${field.id}`}
+                                        className="px-6 py-4 whitespace-nowrap text-sm"
+                                    >
+                                        {String(value ?? 'N/A')}
+                                    </td>
+                                );
+                            })}
                         </tr>
                     ))}
                 </tbody>

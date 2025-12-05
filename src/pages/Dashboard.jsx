@@ -4,7 +4,7 @@ import { useSWRLocalStorage } from '../hooks/useSWRLocalStorage';
 import { keys } from '../api/storage';
 import { Table, LayoutGrid, KanbanSquare, GanttChartSquare } from 'lucide-react';
 
-// Lazy load views for better performance
+
 const TableView = React.lazy(() => import('../components/views/TableView'));
 const GalleryView = React.lazy(() => import('../components/views/GalleryView'));
 const KanbanView = React.lazy(() => import('../components/views/KanbanView'));
