@@ -27,7 +27,6 @@ const StudentManagement = () => {
   const [drawerMode, setDrawerMode] = useState("create");
   const [selectedStudent, setSelectedStudent] = useState(null);
 
-
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null);
   const [confirmMessage, setConfirmMessage] = useState("");
@@ -128,7 +127,10 @@ const StudentManagement = () => {
 
             <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {(students || []).map((student) => (
-                <tr key={student.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                <tr
+                  key={student.id}
+                  className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                >
                   <td className="px-6 py-4">{student.name}</td>
                   <td className="px-6 py-4">{student.email}</td>
                   <td className="px-6 py-4">{student.phone}</td>
@@ -143,7 +145,8 @@ const StudentManagement = () => {
                           : "bg-yellow-200 text-yellow-800"
                       }`}
                     >
-                      {student.status.charAt(0).toUpperCase() + student.status.slice(1)}
+                      {student.status.charAt(0).toUpperCase() +
+                        student.status.slice(1)}
                     </span>
                   </td>
 
@@ -197,12 +200,72 @@ const StudentManagement = () => {
             onCancel={handleCloseDrawer}
           />
         ) : (
-          <div className="text-gray-800 dark:text-gray-200">
-            {Object.entries(selectedStudent || {}).map(([key, value]) => (
-              <p key={key}>
-                <strong>{key}:</strong> {String(value)}
-              </p>
-            ))}
+          <div className="space-y-6 p-2">
+            <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
+              <h3 className="text-lg font-semibold border-b pb-2 mb-3 text-gray-700 dark:text-gray-200">
+                Student Information
+              </h3>
+
+              <div className="space-y-2 text-sm">
+                <p>
+                  <strong>Name:</strong> {selectedStudent?.name}
+                </p>
+                <p>
+                  <strong>Email:</strong> {selectedStudent?.email}
+                </p>
+                <p>
+                  <strong>Phone:</strong> {selectedStudent?.phone}
+                </p>
+
+                <p>
+                  <strong>Status:</strong>{" "}
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                      selectedStudent?.status === "active"
+                        ? "bg-green-200 text-green-800"
+                        : selectedStudent?.status === "inactive"
+                        ? "bg-red-200 text-red-800"
+                        : "bg-yellow-200 text-yellow-700"
+                    }`}
+                  >
+                    {selectedStudent?.status?.charAt(0).toUpperCase() +
+                      selectedStudent?.status?.slice(1)}
+                  </span>
+                </p>
+
+                <p>
+                  <strong>Created:</strong>{" "}
+                  {new Date(selectedStudent?.createdAt).toLocaleDateString()}
+                </p>
+              </div>
+            </div>
+
+            {customFields?.length > 0 && (
+              <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
+                <h3 className="text-lg font-semibold border-b pb-2 mb-3 text-gray-700 dark:text-gray-200">
+                  Additional Details
+                </h3>
+
+                <div className="space-y-2 text-sm">
+                  {customFields.map((field) => {
+                    const value = selectedStudent?.customFields?.[field.key];
+
+                    return (
+                      <p key={field.id} className="flex justify-between">
+                        <span className="font-medium">{field.label}:</span>
+                        <span className="text-gray-700 dark:text-gray-300">
+                          {field.type === "checkbox"
+                            ? value
+                              ? "Yes"
+                              : "No"
+                            : value || "-"}
+                        </span>
+                      </p>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </Drawer>
