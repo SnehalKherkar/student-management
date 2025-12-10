@@ -1,55 +1,53 @@
-import React, { createContext, useState, useEffect, useCallback } from 'react';
-import { storage, keys } from '../api/storage';
+import React, { createContext, useState, useEffect, useCallback } from "react";
+import { storage, keys } from "../api/storage";
+import { createAuthUser } from "../types";
+
+import { useLocalStorageState } from "../hooks/useLocalStorageState";
+import { useUsers } from "../hooks/useUsers";
 
 export const AuthContext = createContext(undefined);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const {
+    state: user,
+    setState: setUserState,
+    clearState: clearUserState,
+  } = useLocalStorageState(keys.AUTH_USER_KEY, null);
+
+  const { users, findUserByEmail } = useUsers();
+
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const checkAuth = () => {
-      const storedUser = storage.get(keys.AUTH_USER_KEY);
-      if (storedUser) {
-        setUser(storedUser);
+    setIsLoading(false);
+  }, []);
+
+  const login = useCallback(
+    async (email, password) => {
+      const foundUser = findUserByEmail(email);
+
+      if (foundUser && foundUser.password === password) {
+        const authUser = createAuthUser(foundUser);
+        setUserState(authUser);
+        return true;
       }
-      setIsLoading(false);
-    };
-    checkAuth();
-  }, []);
 
-  const login = useCallback(async (email, password) => {
-    const allUsers = storage.get(keys.USERS_KEY) || [];
-    const foundUser = allUsers.find(
-      (u) => u.email === email && u.password === password
-    );
-
-    if (foundUser) {
-      const { password: _, ...userToAuth } = foundUser;
-      setUser(userToAuth);
-      storage.set(keys.AUTH_USER_KEY, userToAuth);
-      return true;
-    }
-
-    return false;
-  }, []);
+      return false;
+    },
+    [users]
+  );
 
   const logout = useCallback(() => {
-    setUser(null);
-    storage.remove(keys.AUTH_USER_KEY);
+    clearUserState();
   }, []);
 
   const value = {
     user,
     isAuthenticated: !!user,
+    isLoading,
     login,
     logout,
-    isLoading,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

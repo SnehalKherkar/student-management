@@ -1,43 +1,53 @@
-import React from 'react';
-import { X } from 'lucide-react';
+import React from "react";
+import { X } from "lucide-react";
 
 const Drawer = ({ isOpen, onClose, title, children }) => {
-    if (!isOpen) return null;
+  if (!isOpen) return null;
 
-    return (
-        <div className="fixed inset-0 z-50" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
-            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={onClose}></div>
-            
-            <div className="fixed inset-y-0 right-0 flex max-w-full pl-10">
-                <div className="relative w-screen max-w-md">
-                    
-                    <div className="absolute top-0 left-0 -ml-8 flex pt-4 pr-2 sm:-ml-10 sm:pr-4">
-                        <button
-                            type="button"
-                            className="rounded-md text-gray-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-white"
-                            onClick={onClose}
-                        >
-                            <span className="sr-only">Close panel</span>
-                            <X className="h-6 w-6" aria-hidden="true" />
-                        </button>
-                    </div>
+  return (
+    <div className="fixed inset-0 z-[999] flex">
+      <div
+        className="absolute inset-0 bg-black/60 animate-fadeIn"
+        onClick={onClose}
+      />
+      <div
+        className="
+          absolute right-0 top-0 h-full w-full max-w-xl
+          bg-white/95 dark:bg-gray-900/95
+          backdrop-blur-xl
+          shadow-[0_10px_50px_rgba(0,0,0,0.4)]
+          rounded-l-[28px]
+          animate-slideInRight
+          border-l border-white/20 dark:border-gray-700/40
+          overflow-y-auto
+          z-[1000]
+        "
+      >
+        <div
+          className="
+            sticky top-0 z-20
+            backdrop-blur-2xl bg-white/75 dark:bg-gray-900/60
+            border-b border-gray-300/40 dark:border-gray-700/40
+            flex items-center justify-between
+            px-6 sm:px-8 py-4
+          "
+        >
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white tracking-wide">
+            {title}
+          </h2>
 
-                    <div className="flex h-full flex-col overflow-y-scroll bg-white dark:bg-gray-800 py-6 shadow-xl">
-                        <div className="px-4 sm:px-6">
-                            <h2 className="text-lg font-medium text-gray-900 dark:text-white" id="slide-over-title">
-                                {title}
-                            </h2>
-                        </div>
-
-                        <div className="relative mt-6 flex-1 px-4 sm:px-6">
-                            {children}
-                        </div>
-                    </div>
-
-                </div>
-            </div>
+          <button
+            onClick={onClose}
+            className="p-2 rounded-full shadow-sm bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition"
+            aria-label="Close drawer"
+          >
+            <X size={20} className="text-gray-700 dark:text-gray-200" />
+          </button>
         </div>
-    );
+        <div className="px-4 sm:px-7 md:px-9 py-6 sm:py-8">{children}</div>
+      </div>
+    </div>
+  );
 };
 
 export default Drawer;

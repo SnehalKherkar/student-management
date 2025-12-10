@@ -1,9 +1,7 @@
-import useSWR from 'swr';
-import { storage } from '../api/storage';
+import useSWR from "swr";
+import { storage } from "../api/storage";
 
-const fetcher = (key) => {
-  return storage.get(key);
-};
+const fetcher = (key) => storage.get(key);
 
 export function useSWRLocalStorage(key, config) {
   const { data, error, isLoading, mutate } = useSWR(key, fetcher, config);
@@ -13,10 +11,5 @@ export function useSWRLocalStorage(key, config) {
     return mutate(newData, false);
   };
 
-  return {
-    data,
-    error,
-    isLoading,
-    update,
-  };
+  return { data, error, isLoading, update };
 }

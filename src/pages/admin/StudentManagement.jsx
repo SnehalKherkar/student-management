@@ -1,110 +1,76 @@
 import React, { useState } from "react";
-import { useSWRLocalStorage } from "../../hooks/useSWRLocalStorage";
-import { keys } from "../../api/storage";
 import Drawer from "../../components/common/Drawer";
 import StudentForm from "../../components/students/StudentForm";
+import StudentDetailsModal from "../../components/students/StudentDetailsModal";
 import { Plus, Edit, Eye, Trash2 } from "lucide-react";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-} from "../../components/common/Card";
+import { Card, CardHeader, CardTitle, CardContent } from "../../components/common/Card";
 import ConfirmModal from "../../components/common/ConfirmModal";
+import { useStudents } from "../../hooks/useStudents";
+import { useCustomFields } from "../../hooks/useCustomFields";
+import { toast } from "react-toastify";
 
 const StudentManagement = () => {
-  const {
-    data: students,
-    update: updateStudents,
-    isLoading: studentsLoading,
-  } = useSWRLocalStorage(keys.STUDENTS_KEY);
-
-  const { data: customFields, isLoading: fieldsLoading } = useSWRLocalStorage(
-    keys.CUSTOM_FIELDS_KEY
-  );
+  const { students, addStudent, updateStudent, deleteStudent, isLoading } = useStudents();
+  const { fields: customFields, isLoading: fieldsLoading } = useCustomFields();
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [drawerMode, setDrawerMode] = useState("create");
+  const [drawerMode, setDrawerMode] = useState("create"); // create | edit | view
   const [selectedStudent, setSelectedStudent] = useState(null);
 
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null);
-  const [confirmMessage, setConfirmMessage] = useState("");
   const [confirmTitle, setConfirmTitle] = useState("");
+  const [confirmMessage, setConfirmMessage] = useState("");
 
-  const handleOpenDrawer = (mode, student) => {
+  const openDrawer = (mode = "create", student = null) => {
     setDrawerMode(mode);
-    setSelectedStudent(student || null);
+    setSelectedStudent(student);
     setIsDrawerOpen(true);
   };
 
-  const handleCloseDrawer = () => {
+  const closeDrawer = () => {
     setIsDrawerOpen(false);
     setSelectedStudent(null);
+    setDrawerMode("create");
   };
 
-  const processStudentSave = (studentData) => {
-    if (drawerMode === "create") {
-      const newStudent = {
-        ...studentData,
-        id: `student-${Date.now()}`,
-        createdAt: new Date().toISOString(),
-      };
-
-      updateStudents([...(students || []), newStudent]);
-    } else if (drawerMode === "edit" && selectedStudent) {
-      const updatedStudents = (students || []).map((s) =>
-        s.id === selectedStudent.id ? { ...selectedStudent, ...studentData } : s
-      );
-      updateStudents(updatedStudents);
-    }
-
-    handleCloseDrawer();
-  };
-
-  const handleSaveStudent = (studentData) => {
+  const handleSave = (formData) => {
     setConfirmTitle(drawerMode === "create" ? "Confirm Add" : "Confirm Edit");
-    setConfirmMessage(
-      drawerMode === "create"
-        ? "Are you sure you want to save this new student?"
-        : "Are you sure you want to update this student's details?"
-    );
-
+    setConfirmMessage(drawerMode === "create" ? "Save this new student?" : "Save changes?");
     setConfirmAction(() => () => {
-      processStudentSave(studentData);
+      if (drawerMode === "create") {
+        addStudent(formData);
+        toast.success("Student added");
+      } else if (drawerMode === "edit" && selectedStudent) {
+        updateStudent(selectedStudent.id, formData);
+        toast.success("Student updated");
+      }
       setConfirmOpen(false);
+      closeDrawer();
     });
-
     setConfirmOpen(true);
   };
 
-  const handleDeleteStudent = (studentId) => {
+  const handleDelete = (id) => {
     setConfirmTitle("Delete Student");
     setConfirmMessage("Are you sure you want to delete this student?");
     setConfirmAction(() => () => {
-      const updatedStudents = students.filter((s) => s.id !== studentId);
-      updateStudents(updatedStudents);
+      deleteStudent(id);
+      toast.error("Student deleted");
       setConfirmOpen(false);
+      if (selectedStudent?.id === id) closeDrawer();
     });
     setConfirmOpen(true);
   };
 
-  const formatDate = (dateString) => {
-    if (!dateString) return "-";
-    return new Date(dateString).toLocaleDateString("en-GB");
-  };
-
-  if (studentsLoading || fieldsLoading) return <div>Loading...</div>;
+  if (isLoading || fieldsLoading) return <div className="text-center p-6">Loading...</div>;
 
   return (
     <Card>
       <CardHeader className="flex justify-between items-center">
         <CardTitle>Student Management</CardTitle>
 
-        <button
-          onClick={() => handleOpenDrawer("create")}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700"
-        >
+        <button onClick={() => openDrawer("create")} className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700">
           <Plus size={16} /> Add Student
         </button>
       </CardHeader>
@@ -114,9 +80,7 @@ const StudentManagement = () => {
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Name
-                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Name</th>
                 <th className="px-6 py-3">Email</th>
                 <th className="px-6 py-3">Phone</th>
                 <th className="px-6 py-3">Status</th>
@@ -126,53 +90,21 @@ const StudentManagement = () => {
             </thead>
 
             <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              {(students || []).map((student) => (
-                <tr
-                  key={student.id}
-                  className="hover:bg-gray-50 dark:hover:bg-gray-700"
-                >
-                  <td className="px-6 py-4">{student.name}</td>
-                  <td className="px-6 py-4">{student.email}</td>
-                  <td className="px-6 py-4">{student.phone}</td>
-
+              {(students || []).map((s) => (
+                <tr key={s.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                  <td className="px-6 py-4">{s.name}</td>
+                  <td className="px-6 py-4">{s.email}</td>
+                  <td className="px-6 py-4">{s.phone}</td>
                   <td className="px-6 py-4">
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                        student.status === "active"
-                          ? "bg-green-200 text-green-800"
-                          : student.status === "inactive"
-                          ? "bg-red-200 text-red-800"
-                          : "bg-yellow-200 text-yellow-800"
-                      }`}
-                    >
-                      {student.status.charAt(0).toUpperCase() +
-                        student.status.slice(1)}
+                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${s.status === "active" ? "bg-green-200 text-green-800" : s.status === "inactive" ? "bg-red-200 text-red-800" : "bg-yellow-200 text-yellow-800"}`}>
+                      {s.status?.charAt(0).toUpperCase() + s.status?.slice(1)}
                     </span>
                   </td>
-
-                  <td className="px-6 py-4">{formatDate(student.createdAt)}</td>
-
+                  <td className="px-6 py-4">{s.createdAt ? new Date(s.createdAt).toLocaleDateString("en-GB") : "-"}</td>
                   <td className="px-6 py-4 space-x-3">
-                    <button
-                      onClick={() => handleOpenDrawer("view", student)}
-                      className="text-blue-600 hover:text-blue-900"
-                    >
-                      <Eye size={18} />
-                    </button>
-
-                    <button
-                      onClick={() => handleOpenDrawer("edit", student)}
-                      className="text-indigo-600 hover:text-indigo-900"
-                    >
-                      <Edit size={18} />
-                    </button>
-
-                    <button
-                      onClick={() => handleDeleteStudent(student.id)}
-                      className="text-red-600 hover:text-red-900"
-                    >
-                      <Trash2 size={18} />
-                    </button>
+                    <button onClick={() => openDrawer("view", s)} className="text-blue-600 hover:text-blue-900"><Eye size={18} /></button>
+                    <button onClick={() => openDrawer("edit", s)} className="text-indigo-600 hover:text-indigo-900"><Edit size={18} /></button>
+                    <button onClick={() => handleDelete(s.id)} className="text-red-600 hover:text-red-900"><Trash2 size={18} /></button>
                   </td>
                 </tr>
               ))}
@@ -181,102 +113,15 @@ const StudentManagement = () => {
         </div>
       </CardContent>
 
-      <Drawer
-        isOpen={isDrawerOpen}
-        onClose={handleCloseDrawer}
-        title={
-          drawerMode === "create"
-            ? "Add New Student"
-            : drawerMode === "edit"
-            ? "Edit Student"
-            : "View Student Details"
-        }
-      >
+      <Drawer isOpen={isDrawerOpen} onClose={closeDrawer} title={drawerMode === "create" ? "Add Student" : drawerMode === "edit" ? "Edit Student" : "Student Details"}>
         {drawerMode !== "view" ? (
-          <StudentForm
-            student={selectedStudent}
-            customFields={customFields || []}
-            onSave={handleSaveStudent}
-            onCancel={handleCloseDrawer}
-          />
+          <StudentForm student={selectedStudent} customFields={customFields} onSave={handleSave} onCancel={closeDrawer} />
         ) : (
-          <div className="space-y-6 p-2">
-            <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
-              <h3 className="text-lg font-semibold border-b pb-2 mb-3 text-gray-700 dark:text-gray-200">
-                Student Information
-              </h3>
-
-              <div className="space-y-2 text-sm">
-                <p>
-                  <strong>Name:</strong> {selectedStudent?.name}
-                </p>
-                <p>
-                  <strong>Email:</strong> {selectedStudent?.email}
-                </p>
-                <p>
-                  <strong>Phone:</strong> {selectedStudent?.phone}
-                </p>
-
-                <p>
-                  <strong>Status:</strong>{" "}
-                  <span
-                    className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
-                      selectedStudent?.status === "active"
-                        ? "bg-green-200 text-green-800"
-                        : selectedStudent?.status === "inactive"
-                        ? "bg-red-200 text-red-800"
-                        : "bg-yellow-200 text-yellow-700"
-                    }`}
-                  >
-                    {selectedStudent?.status?.charAt(0).toUpperCase() +
-                      selectedStudent?.status?.slice(1)}
-                  </span>
-                </p>
-
-                <p>
-                  <strong>Created:</strong>{" "}
-                  {new Date(selectedStudent?.createdAt).toLocaleDateString()}
-                </p>
-              </div>
-            </div>
-
-            {customFields?.length > 0 && (
-              <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
-                <h3 className="text-lg font-semibold border-b pb-2 mb-3 text-gray-700 dark:text-gray-200">
-                  Additional Details
-                </h3>
-
-                <div className="space-y-2 text-sm">
-                  {customFields.map((field) => {
-                    const value = selectedStudent?.customFields?.[field.key];
-
-                    return (
-                      <p key={field.id} className="flex justify-between">
-                        <span className="font-medium">{field.label}:</span>
-                        <span className="text-gray-700 dark:text-gray-300">
-                          {field.type === "checkbox"
-                            ? value
-                              ? "Yes"
-                              : "No"
-                            : value || "-"}
-                        </span>
-                      </p>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
+          <StudentDetailsModal student={selectedStudent} customFields={customFields} onEdit={() => setDrawerMode("edit")} onDelete={() => handleDelete(selectedStudent.id)} onClose={closeDrawer} />
         )}
       </Drawer>
 
-      <ConfirmModal
-        open={confirmOpen}
-        title={confirmTitle}
-        message={confirmMessage}
-        onCancel={() => setConfirmOpen(false)}
-        onConfirm={confirmAction}
-      />
+      <ConfirmModal open={confirmOpen} title={confirmTitle} message={confirmMessage} onCancel={() => setConfirmOpen(false)} onConfirm={() => { if (confirmAction) confirmAction(); }} />
     </Card>
   );
 };

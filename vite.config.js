@@ -6,7 +6,8 @@ export default defineConfig({
     tailwindcss(),
   ],
   server: {
-    host: true,        // allow LAN access
-    port: 5173,        // optional
+    host: "0.0.0.0",       
+    port: 5174,  
+    strictPort: false,    
   },
 })
