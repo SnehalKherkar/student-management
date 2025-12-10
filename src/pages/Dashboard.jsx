@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useSWRLocalStorage } from "../hooks/useSWRLocalStorage";
+import { useAuth } from "../hooks/useAuth";
 import { keys } from "../api/storage";
 
 import Drawer from "../components/common/Drawer";
@@ -17,11 +18,23 @@ const Dashboard = () => {
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [editStudent, setEditStudent] = useState(null);
 
-  const { data: students = [], update: updateStudents } =
-    useSWRLocalStorage(keys.STUDENTS_KEY);
+  const { user } = useAuth(); // ⬅️ Logged-in user
+  const { data: students = [], update: updateStudents } = useSWRLocalStorage(
+    keys.STUDENTS_KEY
+  );
 
-  const { data: customFields = [] } =
-    useSWRLocalStorage(keys.CUSTOM_FIELDS_KEY);
+  const { data: customFields = [] } = useSWRLocalStorage(
+    keys.CUSTOM_FIELDS_KEY
+  );
+
+  // -----------------------------------------
+  // ✅ ROLE-BASED FILTERING (MAIN FIX)
+  // -----------------------------------------
+  const filteredStudents =
+    user?.role === "admin"
+      ? students
+      : students.filter((s) => s.id === user.id);
+  // -----------------------------------------
 
   const handleStatusChange = (updatedStudent) => {
     const updated = students.map((s) =>
@@ -46,7 +59,7 @@ const Dashboard = () => {
       case "gallery":
         return (
           <GalleryView
-            students={students}
+            students={filteredStudents} // ⬅️ FIXED
             customFields={customFields}
             onCardClick={setSelectedStudent}
           />
@@ -55,19 +68,19 @@ const Dashboard = () => {
       case "kanban":
         return (
           <KanbanView
-            students={students}
+            students={filteredStudents} // ⬅️ FIXED
             onStatusChange={handleStatusChange}
             onCardClick={setSelectedStudent}
           />
         );
 
       case "timeline":
-        return <TimelineView students={students} />;
+        return <TimelineView students={filteredStudents} />; // ⬅️ FIXED
 
       default:
         return (
           <TableView
-            students={students}
+            students={filteredStudents} // ⬅️ FIXED
             customFields={customFields}
             onRowClick={setSelectedStudent}
           />
@@ -77,20 +90,23 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-6 pb-10">
-
       <div className="w-full">
-        <div className="
+        <div
+          className="
           bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 
           text-white p-5 rounded-2xl shadow-lg
-        ">
+        "
+        >
           <h2 className="text-3xl font-bold tracking-wide">Dashboard</h2>
         </div>
       </div>
 
-      <div className="
+      <div
+        className="
         flex overflow-x-auto gap-3 py-2 
         scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent
-      ">
+      "
+      >
         {["table", "gallery", "kanban", "timeline"].map((v) => (
           <button
             key={v}
@@ -114,6 +130,7 @@ const Dashboard = () => {
         {renderView()}
       </div>
 
+      {/* Student Details Drawer */}
       <Drawer
         isOpen={!!selectedStudent}
         onClose={() => setSelectedStudent(null)}
@@ -131,6 +148,7 @@ const Dashboard = () => {
         )}
       </Drawer>
 
+      {/* Edit Drawer */}
       <Drawer
         isOpen={!!editStudent}
         onClose={() => setEditStudent(null)}
