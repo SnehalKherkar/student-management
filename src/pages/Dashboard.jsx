@@ -70,17 +70,24 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white p-4 rounded-lg shadow-md flex justify-between items-center">
-        <h1 className="text-xl font-bold">Dashboard</h1>
 
-        <div className="flex gap-3">
+      <div className="bg-white p-4 rounded-lg shadow-md space-y-4 sm:space-y-0 sm:flex sm:items-center sm:justify-between">
+
+        <h1 className="text-xl font-bold text-center sm:text-left">
+          Dashboard
+        </h1>
+
+        <div className="flex flex-wrap gap-2 justify-center sm:justify-end">
           {["table", "gallery", "kanban", "timeline"].map((v) => (
             <button
               key={v}
               onClick={() => setCurrentView(v)}
-              className={`px-4 py-2 rounded-md text-sm font-medium capitalize 
+              className={`px-3 sm:px-4 py-2 rounded-md 
+                text-xs sm:text-sm font-medium capitalize transition
                 ${
-                  currentView === v ? "bg-indigo-600 text-white" : "bg-gray-200"
+                  currentView === v
+                    ? "bg-indigo-600 text-white shadow"
+                    : "bg-gray-200 hover:bg-gray-300 text-gray-800"
                 }
               `}
             >
@@ -88,10 +95,15 @@ const Dashboard = () => {
             </button>
           ))}
         </div>
+
       </div>
 
-      <div className="bg-white p-4 rounded-lg shadow-md">{renderView()}</div>
+  
+      <div className="bg-white p-4 rounded-lg shadow-md overflow-x-auto">
+        {renderView()}
+      </div>
 
+  
       <Drawer
         isOpen={!!selectedStudent}
         onClose={() => setSelectedStudent(null)}
