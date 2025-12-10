@@ -50,7 +50,6 @@ const Dashboard = () => {
           <KanbanView
             students={studentsToDisplay}
             onStatusChange={handleStatusChange}
-            onAddStudent={(status) => handleOpenDrawer("create", { status })}
           />
         );
 
@@ -69,25 +68,21 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 w-full">
 
-      <div className="bg-white p-4 rounded-lg shadow-md space-y-4 sm:space-y-0 sm:flex sm:items-center sm:justify-between">
+      <div className="bg-white p-4 rounded-lg shadow-md flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 
-        <h1 className="text-xl font-bold text-center sm:text-left">
-          Dashboard
-        </h1>
+        <h1 className="text-xl font-bold">Dashboard</h1>
 
-        <div className="flex flex-wrap gap-2 justify-center sm:justify-end">
+        <div className="flex flex-wrap justify-center sm:justify-end gap-2">
           {["table", "gallery", "kanban", "timeline"].map((v) => (
             <button
               key={v}
               onClick={() => setCurrentView(v)}
-              className={`px-3 sm:px-4 py-2 rounded-md 
-                text-xs sm:text-sm font-medium capitalize transition
-                ${
-                  currentView === v
-                    ? "bg-indigo-600 text-white shadow"
-                    : "bg-gray-200 hover:bg-gray-300 text-gray-800"
+              className={`px-4 py-2 rounded-md text-sm capitalize transition-all
+                ${currentView === v
+                  ? "bg-indigo-600 text-white shadow"
+                  : "bg-gray-200 hover:bg-gray-300"
                 }
               `}
             >
@@ -98,12 +93,10 @@ const Dashboard = () => {
 
       </div>
 
-  
-      <div className="bg-white p-4 rounded-lg shadow-md overflow-x-auto">
+      <div className="bg-white p-4 rounded-lg shadow-md w-full overflow-x-auto">
         {renderView()}
       </div>
 
-  
       <Drawer
         isOpen={!!selectedStudent}
         onClose={() => setSelectedStudent(null)}
