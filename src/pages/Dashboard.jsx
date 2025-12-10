@@ -18,7 +18,7 @@ const Dashboard = () => {
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [editStudent, setEditStudent] = useState(null);
 
-  const { user } = useAuth(); // ⬅️ Logged-in user
+  const { user } = useAuth(); 
   const { data: students = [], update: updateStudents } = useSWRLocalStorage(
     keys.STUDENTS_KEY
   );
@@ -27,14 +27,11 @@ const Dashboard = () => {
     keys.CUSTOM_FIELDS_KEY
   );
 
-  // -----------------------------------------
-  // ✅ ROLE-BASED FILTERING (MAIN FIX)
-  // -----------------------------------------
   const filteredStudents =
     user?.role === "admin"
       ? students
       : students.filter((s) => s.id === user.id);
-  // -----------------------------------------
+ 
 
   const handleStatusChange = (updatedStudent) => {
     const updated = students.map((s) =>
@@ -59,7 +56,7 @@ const Dashboard = () => {
       case "gallery":
         return (
           <GalleryView
-            students={filteredStudents} // ⬅️ FIXED
+            students={filteredStudents}
             customFields={customFields}
             onCardClick={setSelectedStudent}
           />
@@ -68,19 +65,19 @@ const Dashboard = () => {
       case "kanban":
         return (
           <KanbanView
-            students={filteredStudents} // ⬅️ FIXED
+            students={filteredStudents} 
             onStatusChange={handleStatusChange}
             onCardClick={setSelectedStudent}
           />
         );
 
       case "timeline":
-        return <TimelineView students={filteredStudents} />; // ⬅️ FIXED
+        return <TimelineView students={filteredStudents} />; 
 
       default:
         return (
           <TableView
-            students={filteredStudents} // ⬅️ FIXED
+            students={filteredStudents} 
             customFields={customFields}
             onRowClick={setSelectedStudent}
           />
@@ -130,7 +127,6 @@ const Dashboard = () => {
         {renderView()}
       </div>
 
-      {/* Student Details Drawer */}
       <Drawer
         isOpen={!!selectedStudent}
         onClose={() => setSelectedStudent(null)}
@@ -148,7 +144,6 @@ const Dashboard = () => {
         )}
       </Drawer>
 
-      {/* Edit Drawer */}
       <Drawer
         isOpen={!!editStudent}
         onClose={() => setEditStudent(null)}
