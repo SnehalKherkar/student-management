@@ -18,31 +18,26 @@ const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
 
+  const askLogout = () => setConfirmOpen(true);
+
   const handleLogout = () => {
     logout();
     navigate("/login");
   };
 
-  const askLogout = () => {
-    setConfirmOpen(true);
-  };
-
   const active =
-    "bg-indigo-600 text-white shadow-md font-semibold tracking-wide";
+    "bg-indigo-600 text-white shadow font-semibold tracking-wide";
   const inactive =
     "text-gray-300 hover:text-white hover:bg-gray-700 transition";
 
   return (
     <>
-      <header className="bg-gray-900 text-white shadow-xl sticky top-0 z-[999]">
+      <header className="bg-gray-900 text-white shadow-md sticky top-0 z-[999]">
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      
           <div className="flex items-center justify-between h-16">
- 
-            <div className="flex items-center gap-2">
-              <span className="text-xl md:text-2xl font-extrabold bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-                Student Management
-              </span>
+
+            <div className="text-xl md:text-2xl font-extrabold bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+              Student Management
             </div>
 
             <div className="hidden md:flex items-center gap-2">
@@ -52,8 +47,7 @@ const Header = () => {
                   `${isActive ? active : inactive} px-4 py-2 rounded-lg flex items-center gap-2`
                 }
               >
-                <Home size={18} />
-                Dashboard
+                <Home size={18} /> Dashboard
               </NavLink>
 
               {user?.role === "admin" && (
@@ -64,8 +58,7 @@ const Header = () => {
                       `${isActive ? active : inactive} px-4 py-2 rounded-lg flex items-center gap-2`
                     }
                   >
-                    <UserCircle size={18} />
-                    Students
+                    <UserCircle size={18} /> Students
                   </NavLink>
 
                   <NavLink
@@ -74,22 +67,20 @@ const Header = () => {
                       `${isActive ? active : inactive} px-4 py-2 rounded-lg flex items-center gap-2`
                     }
                   >
-                    <ListChecks size={18} />
-                    Custom Fields
+                    <ListChecks size={18} /> Custom Fields
                   </NavLink>
                 </>
               )}
             </div>
 
-            <div className="hidden md:flex items-center gap-3">
-              <div className="text-sm text-gray-300">Hi, {user?.name}</div>
+            <div className="hidden md:flex items-center gap-4">
+              <span className="text-sm text-gray-300">Hi, {user?.name}</span>
 
               <button
                 onClick={askLogout}
                 className="px-3 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white flex items-center gap-2 transition shadow"
               >
-                <LogOut size={18} />
-                Logout
+                <LogOut size={18} /> Logout
               </button>
             </div>
 
@@ -110,8 +101,7 @@ const Header = () => {
                   `${isActive ? active : inactive} block px-4 py-3 rounded-lg`
                 }
               >
-                <Home className="inline-block mr-2" size={18} />
-                Dashboard
+                <Home size={18} className="inline-block mr-2" /> Dashboard
               </NavLink>
 
               {user?.role === "admin" && (
@@ -123,8 +113,7 @@ const Header = () => {
                       `${isActive ? active : inactive} block px-4 py-3 rounded-lg`
                     }
                   >
-                    <UserCircle className="inline-block mr-2" size={18} />
-                    Student Management
+                    <UserCircle size={18} className="inline-block mr-2" /> Students
                   </NavLink>
 
                   <NavLink
@@ -134,8 +123,7 @@ const Header = () => {
                       `${isActive ? active : inactive} block px-4 py-3 rounded-lg`
                     }
                   >
-                    <ListChecks className="inline-block mr-2" size={18} />
-                    Custom Fields
+                    <ListChecks size={18} className="inline-block mr-2" /> Custom Fields
                   </NavLink>
                 </>
               )}
@@ -165,9 +153,10 @@ const Header = () => {
   );
 };
 
+
 const MainLayout = () => {
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
+    <div className="min-h-screen">
       <Header />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">

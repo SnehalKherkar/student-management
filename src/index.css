@@ -1,4 +1,21 @@
 @import "tailwindcss";
+
+html, body {
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+
+  background:
+    linear-gradient(135deg, #e0e7ff 0%, #ede9fe 50%, #fff1f2 100%),
+    url("https://www.transparenttextures.com/patterns/noisy.png");
+
+  background-size: cover;
+  background-attachment: fixed;
+}
+
+
+
+
 @keyframes slideInRight {
   0% { transform: translateX(100%); opacity: 0; }
   100% { transform: translateX(0); opacity: 1; }
@@ -17,20 +34,14 @@
   animation: fadeIn 0.35s ease-out;
 }
 
-
-
-/* 🌟 Custom Tailwind v4 Animations */
 @theme {
-  /* Fade In */
+
   --animate-fadeIn: fadeIn 0.8s ease-out;
 
-  /* Floating animation */
   --animate-float: float 3s ease-in-out infinite;
 
-  /* Slow Pulse Glow */
   --animate-glow: glow 3s ease-in-out infinite;
 
-  /* Particles */
   --animate-particle: particle 4s linear infinite;
 
   @keyframes fadeIn {
