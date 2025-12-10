@@ -1,10 +1,10 @@
 import React, { useState, useMemo } from "react";
-import { useAuth } from "../hooks/useAuth";
 import { useSWRLocalStorage } from "../hooks/useSWRLocalStorage";
 import { keys } from "../api/storage";
 
 import Drawer from "../components/common/Drawer";
 import StudentDetailsModal from "../components/students/StudentDetailsModal";
+import StudentForm from "../components/students/StudentForm";
 
 import TableView from "../components/views/TableView";
 import GalleryView from "../components/views/GalleryView";
@@ -12,88 +12,95 @@ import KanbanView from "../components/views/KanbanView";
 import TimelineView from "../components/views/TimelineView";
 
 const Dashboard = () => {
-  const { user } = useAuth();
-  const [currentView, setCurrentView] = useState("table");
-  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [view, setView] = useState("table");
 
-  const { data: allStudents, update: updateStudents } = useSWRLocalStorage(
+  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [editStudent, setEditStudent] = useState(null);
+
+  const { data: students = [], update: updateStudents } = useSWRLocalStorage(
     keys.STUDENTS_KEY
   );
 
-  const { data: customFields } = useSWRLocalStorage(keys.CUSTOM_FIELDS_KEY);
-
-  const studentsToDisplay = useMemo(() => {
-    if (!allStudents) return [];
-    if (user?.role === "admin") return allStudents;
-    return allStudents.filter((s) => s.id === user?.id);
-  }, [allStudents, user]);
+  const { data: customFields = [] } = useSWRLocalStorage(keys.CUSTOM_FIELDS_KEY);
 
   const handleStatusChange = (updatedStudent) => {
-    const updated = allStudents.map((s) =>
+    const updated = students.map((s) =>
       s.id === updatedStudent.id ? updatedStudent : s
     );
     updateStudents(updated);
   };
 
+  const handleSaveEdit = (updatedStudent) => {
+    const updated = students.map((s) =>
+      s.id === updatedStudent.id ? updatedStudent : s
+    );
+
+    updateStudents(updated);
+
+    setSelectedStudent(updatedStudent); 
+    setEditStudent(null);
+  };
+
   const renderView = () => {
-    switch (currentView) {
+    switch (view) {
       case "gallery":
         return (
           <GalleryView
-            students={studentsToDisplay}
-            customFields={customFields || []}
+            students={students}
+            customFields={customFields}
+            onCardClick={setSelectedStudent}
           />
         );
 
       case "kanban":
         return (
           <KanbanView
-            students={studentsToDisplay}
+            students={students}
             onStatusChange={handleStatusChange}
+            onCardClick={setSelectedStudent}
           />
         );
 
       case "timeline":
-        return <TimelineView students={studentsToDisplay} />;
+        return <TimelineView students={students} />;
 
       default:
         return (
           <TableView
-            students={studentsToDisplay}
-            customFields={customFields || []}
-            onStudentClick={setSelectedStudent}
+            students={students}
+            customFields={customFields}
+            onRowClick={setSelectedStudent}
           />
         );
     }
   };
 
   return (
-    <div className="space-y-4 w-full">
+    <div className="space-y-6">
 
-      <div className="bg-white p-4 rounded-lg shadow-md flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-wrap justify-between items-center gap-4">
+        <div className="bg-gradient-to-r from-indigo-600 to-pink-600 text-white p-4 rounded-xl shadow-md">
+          <h2 className="text-2xl font-bold">Dashboard</h2>
+        </div>
 
-        <h1 className="text-xl font-bold">Dashboard</h1>
-
-        <div className="flex flex-wrap justify-center sm:justify-end gap-2">
+        <div className="flex flex-wrap gap-2">
           {["table", "gallery", "kanban", "timeline"].map((v) => (
             <button
               key={v}
-              onClick={() => setCurrentView(v)}
-              className={`px-4 py-2 rounded-md text-sm capitalize transition-all
-                ${currentView === v
+              onClick={() => setView(v)}
+              className={`px-4 py-2 rounded-lg font-medium capitalize transition ${
+                view === v
                   ? "bg-indigo-600 text-white shadow"
-                  : "bg-gray-200 hover:bg-gray-300"
-                }
-              `}
+                  : "bg-white border border-gray-300 hover:bg-gray-50"
+              }`}
             >
               {v}
             </button>
           ))}
         </div>
-
       </div>
 
-      <div className="bg-white p-4 rounded-lg shadow-md w-full overflow-x-auto">
+      <div className="bg-white rounded-2xl shadow-inner p-5">
         {renderView()}
       </div>
 
@@ -105,8 +112,26 @@ const Dashboard = () => {
         {selectedStudent && (
           <StudentDetailsModal
             student={selectedStudent}
-            customFields={customFields || []}
-            onEdit={() => {}}
+            customFields={customFields}
+            onEdit={(student) => {
+              setSelectedStudent(null);
+              setEditStudent(student);
+            }}
+          />
+        )}
+      </Drawer>
+
+      <Drawer
+        isOpen={!!editStudent}
+        onClose={() => setEditStudent(null)}
+        title="Edit Student"
+      >
+        {editStudent && (
+          <StudentForm
+            student={editStudent}
+            customFields={customFields}
+            onSave={handleSaveEdit}
+            onCancel={() => setEditStudent(null)}
           />
         )}
       </Drawer>

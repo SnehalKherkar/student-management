@@ -1,55 +1,31 @@
-import React from 'react';
-import { UserPlus } from 'lucide-react';
+import React from "react";
 
-const TimelineView = ({ students }) => {
-    const sortedStudents = [...students].sort(
-        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
+const TimelineView = ({ students = [] }) => {
+  return (
+    <div className="space-y-6">
+      {students.map(s => (
+        <div key={s.id} className="bg-white rounded-2xl p-4 shadow-md flex gap-4">
+          <div className="w-12 h-12 rounded-lg bg-indigo-100 flex items-center justify-center font-bold text-indigo-700">
+            {s.name?.split(" ").map(n => n[0]).slice(0,2).join("")}
+          </div>
 
-    return (
-        <div className="flow-root">
-            <ul className="-mb-8">
-                {sortedStudents.map((student, studentIdx) => (
-                    <li key={student.id}>
-                        <div className="relative pb-8">
-                            {studentIdx !== sortedStudents.length - 1 && (
-                                <span
-                                    className="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200 dark:bg-gray-700"
-                                    aria-hidden="true"
-                                />
-                            )}
-
-                            <div className="relative flex space-x-3">
-                                <div>
-                                    <span className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center ring-8 ring-white dark:ring-gray-800">
-                                        <UserPlus className="h-5 w-5 text-white" aria-hidden="true" />
-                                    </span>
-                                </div>
-
-                                <div className="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
-                                    <div>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                                            New student{' '}
-                                            <a href="#" className="font-medium text-gray-900 dark:text-white">
-                                                {student.name}
-                                            </a>{' '}
-                                            joined.
-                                        </p>
-                                    </div>
-
-                                    <div className="text-right text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
-                                        <time dateTime={student.createdAt}>
-                                            {new Date(student.createdAt).toLocaleDateString()}
-                                        </time>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </li>
-                ))}
-            </ul>
+          <div className="flex-1">
+            <div className="flex items-center justify-between">
+              <h4 className="font-semibold">{s.name}</h4>
+              <div className="text-xs text-gray-500">{new Date(s.createdAt || Date.now()).toLocaleDateString()}</div>
+            </div>
+            <p className="text-sm text-gray-600 mt-2">{s.customFields?.bio || "-"}</p>
+            <div className="mt-3 flex gap-2">
+              <span className={`px-2 py-1 rounded-full text-xs ${
+                s.status==="active" ? "bg-green-100 text-green-800" :
+                s.status==="inactive" ? "bg-red-100 text-red-800" : "bg-yellow-100 text-yellow-800"
+              }`}>{s.status}</span>
+            </div>
+          </div>
         </div>
-    );
+      ))}
+    </div>
+  );
 };
 
 export default TimelineView;

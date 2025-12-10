@@ -48,11 +48,23 @@ const StudentForm = ({ student = null, customFields = [], onSave, onCancel }) =>
   };
 
   const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!formData.name?.trim()) return alert("Name is required");
-    if (!formData.email?.trim()) return alert("Email is required");
-    onSave(formData);
+  e.preventDefault();
+
+  if (!formData.name.trim()) return alert("Name is required");
+  if (!formData.email.trim()) return alert("Email is required");
+
+  const updatedStudent = {
+    ...student,           
+    ...formData,           
+    customFields: {
+      ...(student?.customFields || {}),
+      ...(formData.customFields || {})
+    }
   };
+
+  onSave(updatedStudent);
+};
+
 
   const renderField = (f) => {
     const value = formData.customFields?.[f.key];

@@ -1,85 +1,37 @@
 import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "../common/Card";
 
-const GalleryView = ({ students = [], customFields = [] }) => {
-  const formatDate = (dateString) => {
-    if (!dateString) return "-";
-    return new Date(dateString).toLocaleDateString("en-GB");
-  };
-
-  const yesNo = (value) => (value ? "Yes" : "No");
-
-  const statusPill = (status) => {
-    switch (status?.toLowerCase()) {
-      case "active":
-        return "bg-green-100 text-green-800";
-      case "inactive":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-yellow-100 text-yellow-800";
-    }
-  };
-
+const GalleryView = ({ students = [], customFields = [], onCardClick }) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
-      {students.map((student) => {
-        const cf = student.customFields || {};
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {students.map(s => (
+        <article key={s.id} className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition" onClick={() => onCardClick?.(s)}>
+          <div className="p-5">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-indigo-500 to-pink-500 text-white flex items-center justify-center text-xl font-bold">
+                {s.name?.split(" ").map(x => x[0]).slice(0,2).join("")}
+              </div>
+              <div>
+                <h3 className="text-lg font-bold">{s.name}</h3>
+                <p className="text-sm text-gray-400">{s.email}</p>
+              </div>
+            </div>
 
-        return (
-          <Card
-            key={student.id}
-            className="rounded-2xl shadow-xl border border-gray-200 px-2 py-1"
-          >
-
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xl font-semibold">
-                {student.name}
-              </CardTitle>
-              <p className="text-gray-500 text-sm">{student.email}</p>
-            </CardHeader>
-
-            <hr className="my-3 border-gray-300/60" />
-
-            <CardContent className="space-y-3 text-[15px] leading-6">
-              <div className="flex items-center gap-2">
-                <span className="font-semibold">Status:</span>
-                <span
-                  className={`px-3 py-1 rounded-full text-xs font-semibold ${statusPill(
-                    student.status
-                  )}`}
-                >
-                  {student.status}
-                </span>
+            <div className="mt-4 border-t pt-4">
+              <div className="flex items-center justify-between">
+                <div className="text-sm text-gray-500">Status</div>
+                <div className={`text-xs px-2 py-1 rounded-full ${
+                  s.status==="active" ? "bg-green-100 text-green-800" :
+                  s.status==="inactive" ? "bg-red-100 text-red-800" : "bg-yellow-100 text-yellow-800"
+                }`}>{s.status}</div>
               </div>
 
-              {cf.gender && (
-                <p>
-                  <strong>Gender:</strong> {cf.gender}
-                </p>
-              )}
-
-              {cf.dob && (
-                <p>
-                  <strong>Date of Birth:</strong> {formatDate(cf.dob)}
-                </p>
-              )}
-
-              {cf.isScholarshipHolder !== undefined && (
-                <p>
-                  <strong>Is Scholarship Holder:</strong>{" "}
-                  {yesNo(cf.isScholarshipHolder)}
-                </p>
-              )}
-
-              {cf.bio && (
-                <p>
-                  <strong>Profile Bio:</strong> {cf.bio}
-                </p>
-              )}
-            </CardContent>
-          </Card>
-        );
-      })}
+              <div className="mt-3 text-sm text-gray-700">
+                {s.customFields?.bio ? (s.customFields.bio.length>120 ? s.customFields.bio.slice(0,120)+"..." : s.customFields.bio) : "-"}
+              </div>
+            </div>
+          </div>
+        </article>
+      ))}
     </div>
   );
 };

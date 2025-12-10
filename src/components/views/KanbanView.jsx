@@ -1,149 +1,73 @@
 import React, { useMemo } from "react";
-import {
-  DragDropContext,
-  Droppable,
-  Draggable,
-} from "@hello-pangea/dnd";
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 
-import { Plus } from "lucide-react";
-
-const STATUS_STYLES = {
-  active: {
-    label: "Active",
-    color: "text-green-600 bg-green-100",
-    border: "border-green-300",
-  },
-  inactive: {
-    label: "Inactive",
-    color: "text-red-600 bg-red-100",
-    border: "border-red-300",
-  },
-  "on-hold": {
-    label: "On-Hold",
-    color: "text-yellow-700 bg-yellow-100",
-    border: "border-yellow-300",
-  },
+const STATUS_ORDER = ["active","on-hold","inactive"];
+const STATUS_META = {
+  active: { label: "Active", color: "bg-green-50 text-green-700" },
+  "on-hold": { label: "On Hold", color: "bg-yellow-50 text-yellow-700" },
+  inactive: { label: "Inactive", color: "bg-red-50 text-red-700" },
 };
 
-const KanbanView = ({ students, onStatusChange, onAddStudent }) => {
+const KanbanView = ({ students = [], onStatusChange, onCardClick }) => {
   const columns = useMemo(() => {
-    const grouped = {
-      active: [],
-      inactive: [],
-      "on-hold": [],
-    };
-    students.forEach((s) => grouped[s.status]?.push(s));
-    return grouped;
+    const g = { active: [], "on-hold": [], inactive: [] };
+    (students || []).forEach(s => {
+      g[s.status || "active"].push(s);
+    });
+    return g;
   }, [students]);
 
   const handleDragEnd = (result) => {
-    const { source, destination, draggableId } = result;
+    const { destination, source, draggableId } = result;
     if (!destination) return;
+    if (destination.droppableId === source.droppableId) return;
 
-    const sourceStatus = source.droppableId;
-    const destStatus = destination.droppableId;
-
-    if (sourceStatus === destStatus) return;
-
-    const student = students.find((s) => s.id === draggableId);
+    const student = students.find(s => s.id === draggableId);
     if (!student) return;
 
-    onStatusChange({ ...student, status: destStatus });
+    onStatusChange?.({ ...student, status: destination.droppableId });
   };
 
   return (
     <DragDropContext onDragEnd={handleDragEnd}>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {STATUS_ORDER.map(status => (
+          <Droppable key={status} droppableId={status}>
+            {(provided, snapshot) => (
+              <div ref={provided.innerRef} {...provided.droppableProps}
+                className={`p-4 rounded-2xl min-h-[260px] transition ${snapshot.isDraggingOver ? "ring-4 ring-indigo-200/40" : "bg-white"} shadow`}>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold">{STATUS_META[status].label}</h3>
+                  <div className="text-sm text-gray-400">{columns[status].length}</div>
+                </div>
 
-        {Object.keys(columns).map((status) => {
-          const style = STATUS_STYLES[status];
-
-          return (
-            <Droppable key={status} droppableId={status}>
-              {(provided, snapshot) => (
-                <div
-                  ref={provided.innerRef}
-                  {...provided.droppableProps}
-                  className={`
-                    rounded-xl shadow-md p-4 backdrop-blur-xl
-                    min-h-[75vh] border transition-all duration-300 
-                    ${
-                      snapshot.isDraggingOver
-                        ? "bg-indigo-50/70 border-indigo-400 shadow-lg scale-[1.01]"
-                        : "bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700"
-                    }
-                  `}
-                >
-                
-                  <div className="flex items-center justify-between mb-4">
-                    <h2
-                      className={`text-lg font-bold flex items-center gap-2 ${style.color}`}
-                    >
-                      ● {style.label}
-                    </h2>
-
-                  </div>
-
-                  {columns[status].length === 0 && (
-                    <div className="text-center text-gray-400 py-10 text-sm">
-                      No students here
-                    </div>
-                  )}
-
-                  {columns[status].map((student, index) => (
-                    <Draggable
-                      key={student.id}
-                      draggableId={student.id}
-                      index={index}
-                    >
-                      {(provided, snapshot) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          {...provided.dragHandleProps}
-                          className={`
-                            p-4 mb-3 rounded-xl bg-white dark:bg-gray-800 border shadow-sm
-                            transition-all duration-300 cursor-grab active:cursor-grabbing
-                            flex items-center gap-3
-                            ${style.border}
-                            ${
-                              snapshot.isDragging
-                                ? "shadow-xl scale-[1.03] rotate-[1deg]"
-                                : ""
-                            }
-                          `}
-                        >
-                       
-                          <img
-                            src={`https://api.dicebear.com/7.x/initials/svg?seed=${student.name}`}
-                            alt="avatar"
-                            className="w-12 h-12 rounded-lg"
-                          />
-
+                <div className="space-y-3">
+                  {columns[status].map((card, index) => (
+                    <Draggable key={card.id} draggableId={card.id} index={index}>
+                      {(p,snap) => (
+                        <div ref={p.innerRef} {...p.draggableProps} {...p.dragHandleProps}
+                          className={`bg-white rounded-lg p-3 flex gap-3 items-start shadow-sm cursor-grab ${snap.isDragging ? "scale-[1.02] shadow-lg" : ""}`} onClick={() => onCardClick?.(card)}>
+                          <div className="w-12 h-12 rounded-md bg-gradient-to-br from-indigo-500 to-pink-500 text-white flex items-center justify-center font-bold">
+                            {card.name?.split(" ").map(x => x[0]).slice(0,2).join("")}
+                          </div>
                           <div className="flex-1">
-                            <h3 className="font-semibold">{student.name}</h3>
-                            <p className="text-gray-500 text-sm">
-                              {student.email}
-                            </p>
-
-                            <span
-                              className={`text-xs px-2 py-1 rounded-md mt-1 inline-block ${style.color}`}
-                            >
-                              {style.label}
-                            </span>
+                            <div className="flex items-center justify-between">
+                              <div className="font-semibold">{card.name}</div>
+                              <div className={`text-xs px-2 py-0.5 rounded-full ${STATUS_META[card.status].color}`}>{STATUS_META[card.status].label}</div>
+                            </div>
+                            <p className="text-sm text-gray-500 mt-1">{card.customFields?.bio ? (card.customFields.bio.length>90 ? card.customFields.bio.slice(0,90)+"..." : card.customFields.bio) : "-"}</p>
+                            <div className="mt-2 text-xs text-gray-400">{card.email}</div>
                           </div>
                         </div>
                       )}
                     </Draggable>
                   ))}
-
                   {provided.placeholder}
                 </div>
-              )}
-            </Droppable>
-          );
-        })}
-
+              </div>
+            )}
+          </Droppable>
+        ))}
       </div>
     </DragDropContext>
   );
