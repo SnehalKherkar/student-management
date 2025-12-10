@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import { useSWRLocalStorage } from "../hooks/useSWRLocalStorage";
 import { keys } from "../api/storage";
 
@@ -17,11 +17,11 @@ const Dashboard = () => {
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [editStudent, setEditStudent] = useState(null);
 
-  const { data: students = [], update: updateStudents } = useSWRLocalStorage(
-    keys.STUDENTS_KEY
-  );
+  const { data: students = [], update: updateStudents } =
+    useSWRLocalStorage(keys.STUDENTS_KEY);
 
-  const { data: customFields = [] } = useSWRLocalStorage(keys.CUSTOM_FIELDS_KEY);
+  const { data: customFields = [] } =
+    useSWRLocalStorage(keys.CUSTOM_FIELDS_KEY);
 
   const handleStatusChange = (updatedStudent) => {
     const updated = students.map((s) =>
@@ -37,7 +37,7 @@ const Dashboard = () => {
 
     updateStudents(updated);
 
-    setSelectedStudent(updatedStudent); 
+    setSelectedStudent(updatedStudent);
     setEditStudent(null);
   };
 
@@ -76,31 +76,41 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-10">
 
-      <div className="flex flex-wrap justify-between items-center gap-4">
-        <div className="bg-gradient-to-r from-indigo-600 to-pink-600 text-white p-4 rounded-xl shadow-md">
-          <h2 className="text-2xl font-bold">Dashboard</h2>
-        </div>
-
-        <div className="flex flex-wrap gap-2">
-          {["table", "gallery", "kanban", "timeline"].map((v) => (
-            <button
-              key={v}
-              onClick={() => setView(v)}
-              className={`px-4 py-2 rounded-lg font-medium capitalize transition ${
-                view === v
-                  ? "bg-indigo-600 text-white shadow"
-                  : "bg-white border border-gray-300 hover:bg-gray-50"
-              }`}
-            >
-              {v}
-            </button>
-          ))}
+      <div className="w-full">
+        <div className="
+          bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 
+          text-white p-5 rounded-2xl shadow-lg
+        ">
+          <h2 className="text-3xl font-bold tracking-wide">Dashboard</h2>
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-inner p-5">
+      <div className="
+        flex overflow-x-auto gap-3 py-2 
+        scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent
+      ">
+        {["table", "gallery", "kanban", "timeline"].map((v) => (
+          <button
+            key={v}
+            onClick={() => setView(v)}
+            className={`
+              px-5 py-2 rounded-xl font-medium capitalize whitespace-nowrap
+              transition-all duration-200 border backdrop-blur
+              ${
+                view === v
+                  ? "bg-indigo-600 text-white shadow-md scale-105"
+                  : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+              }
+            `}
+          >
+            {v}
+          </button>
+        ))}
+      </div>
+
+      <div className="bg-white rounded-2xl shadow-xl p-5 min-h-[300px]">
         {renderView()}
       </div>
 
