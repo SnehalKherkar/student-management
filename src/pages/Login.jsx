@@ -29,17 +29,10 @@ const Login = () => {
       return;
     }
 
-    const success = await login(email, password);
-
-    if (!success) {
-      toast.error("Wrong email or password");
-      return;
-    }
-
     const isAdminEmail = email.toLowerCase().includes("admin");
 
     if (role === "admin" && !isAdminEmail) {
-      toast.error(" This account is not an Admin");
+      toast.error(" Sorry you are not an Admin");
       return;
     }
 
@@ -47,6 +40,15 @@ const Login = () => {
       toast.error("Admin cannot login as Student");
       return;
     }
+
+    const success = await login(email, password);
+
+    if (!success) {
+      toast.error("Wrong email or password");
+      return;
+    }
+
+    
 
     toast.success("Login Successful!");
     navigate("/");

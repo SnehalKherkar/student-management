@@ -4,10 +4,12 @@ import {
   Mail,
   Phone,
   FileText,
-  CheckCircle,
   User,
   Trash2,
 } from "lucide-react";
+
+
+import { useAuth } from "../../hooks/useAuth";
 
 const StudentDetailsModal = ({
   student,
@@ -18,10 +20,15 @@ const StudentDetailsModal = ({
 }) => {
   if (!student) return null;
 
+
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin";
+
   return (
     <div className="w-full">
       <div className="relative">
         <div className="h-36 bg-gradient-to-r from-indigo-600 via-purple-600 to-fuchsia-600 rounded-t-2xl" />
+
         <div className="absolute left-1/2 -bottom-12 transform -translate-x-1/2">
           <div className="w-24 h-24 rounded-2xl bg-white shadow-xl flex items-center justify-center text-4xl font-bold text-indigo-700">
             {student.name?.charAt(0)}
@@ -35,6 +42,7 @@ const StudentDetailsModal = ({
         </h3>
 
         <div className="flex items-center justify-center gap-3">
+
           <span
             className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold ${
               student.status === "active"
@@ -56,14 +64,16 @@ const StudentDetailsModal = ({
             {student.status?.charAt(0).toUpperCase() + student.status?.slice(1)}
           </span>
 
-          <button
-            onClick={() => onEdit(student)}
-            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gray-900/10 hover:bg-gray-900/20 text-gray-800 dark:text-white transition"
-          >
-            <Edit size={14} /> Edit
-          </button>
+          {isAdmin && (
+            <button
+              onClick={() => onEdit(student)}
+              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gray-900/10 hover:bg-gray-900/20 text-gray-800 dark:text-white transition"
+            >
+              <Edit size={14} /> Edit
+            </button>
+          )}
 
-          {onDelete && (
+          {isAdmin && onDelete && (
             <button
               onClick={onDelete}
               className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-50 hover:bg-red-100 text-red-700 transition"
@@ -104,6 +114,7 @@ const StudentDetailsModal = ({
               const v = student.customFields?.[f.key];
               const value =
                 f.type === "checkbox" ? (v ? "Yes" : "No") : v || "-";
+
               return (
                 <InfoRow
                   key={f.id}
